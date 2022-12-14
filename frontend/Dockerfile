@@ -1,4 +1,4 @@
-FROM redis:7.0-bullseye
+FROM node:18-bullseye
 
 # UPDATE AND LOCALIZE
 RUN apt-get update \
@@ -13,3 +13,8 @@ RUN apt-get update \
 ENV LANG=pt_BR.utf8
 ENV TZ=America/Sao_Paulo
 
+# INSTALL AND BUILD
+WORKDIR /usr/src/frontend
+COPY . /usr/src/frontend/
+RUN npm install
+RUN npm run build

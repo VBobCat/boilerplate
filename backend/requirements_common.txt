@@ -1,4 +1,8 @@
 asgiref==3.5.2
+cryptography==38.0.4
 Django==4.1.4
+django-probes==1.7.0
+python-dotenv==0.21.0
 sqlparse==0.4.3
 tzdata==2022.7
+whitenoise==6.2.0

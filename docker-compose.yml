@@ -1,10 +1,14 @@
 version: '3.9'
 
+volumes:
+  ng_static:
+
+
 services:
 
-  postgres:
+  database:
     build: ./database
-    container_name: database
+    container_name: ${PROJECT_NAME}_database
     env_file:
       - .env
     expose:
@@ -17,7 +21,7 @@ services:
 
   redis:
     build: ./redis
-    container_name: redis
+    container_name: ${PROJECT_NAME}_redis
     expose:
       - "6379"
     ports:
@@ -26,3 +30,48 @@ services:
     volumes:
       - ./redis/conf:/usr/local/etc/redis
       - ./redis/data:/data
+
+  frontend:
+    build: ./frontend
+    container_name: ${PROJECT_NAME}_frontend
+    volumes:
+      - ng_static:/usr/src/frontend/dist/frontend
+
+  backend:
+    build: ./backend
+    command: bash "entrypoint_backend.sh"
+    container_name:  ${PROJECT_NAME}_backend
+    depends_on:
+      - database
+      - redis
+      - frontend
+    environment:
+      - DJANGO_DATABASES_DEFAULT_HOST=database
+      - DJANGO_DATABASES_DEFAULT_PORT=5432
+    env_file:
+      .env
+    image: ${PROJECT_NAME}-backend:latest
+    volumes:
+      - ng_static:/usr/src/backend/ng_static
+
+  website:
+    image: ${PROJECT_NAME}-backend:latest
+    command: bash "entrypoint_website.sh"
+    container_name: ${PROJECT_NAME}_website
+    depends_on:
+      - database
+      - redis
+      - frontend
+      - backend
+    environment:
+      - DJANGO_DATABASES_DEFAULT_HOST=database
+      - DJANGO_DATABASES_DEFAULT_PORT=5432
+    env_file:
+      - .env
+    expose:
+      - "8000"
+    ports:
+      - "8000:8000"
+    shm_size: "256MB"
+    volumes:
+      - ng_static:/usr/src/backend/ng_static
