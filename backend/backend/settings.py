@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 
-from shared.env_util import getenv, initenv
+from shared.env_util import getenv, initenv, getenv_json, getenv_bool
 from shared.ng_static import ng_static_dir
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,26 +27,44 @@ initenv(BASE_DIR.parent)
 SECRET_KEY = 'django-insecure-a3c%j#0=e#f-9^d-nixz#j6mj2z=v!fup$1@voeqi!)r=!gvd('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Debug settings, https://docs.djangoproject.com/en/4.1/ref/settings/#debug
+DEBUG = getenv_bool('DJANGO_DEBUG', False)
 
-ALLOWED_HOSTS = []
+# Hosts, CORS, CSP, CSRF settings
+ALLOWED_HOSTS = getenv_json('DJANGO_ALLOWED_HOSTS', [])
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS = getenv_json('DJANGO_CSRF_TRUSTED_ORIGINS', [])
 
 # Application definition
+# https://docs.djangoproject.com/en/4.1/ref/settings/#wsgi-application
+WSGI_APPLICATION = 'backend.wsgi.application'
 
+# Application routes
+# https://docs.djangoproject.com/en/4.1/ref/settings/#root-urlconf
+ROOT_URLCONF = 'backend.urls'
+
+# Installed apps
+# https://docs.djangoproject.com/en/4.1/ref/settings/#installed-apps
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic',
+    'corsheaders',  # cf. https://pypi.org/project/django-cors-headers/
+    'whitenoise.runserver_nostatic',  # cf. https://pypi.org/project/whitenoise/
     'django.contrib.staticfiles',
-    'django_probes',
+    'django_probes',  # cf. https://pypi.org/project/django-probes/
+    'rest_framework',  # cf. https://pypi.org/project/djangorestframework/,
+    'drf_spectacular',  # cf. https://pypi.org/project/drf-spectacular/
+    'drf_spectacular_sidecar',  # cf. https://pypi.org/project/drf-spectacular/
 ]
 
+# Middleware
+# https://docs.djangoproject.com/en/4.1/ref/settings/#middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # cf. https://pypi.org/project/django-cors-headers/
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # cf. https://whitenoise.evans.io/en/stable/django.html
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -54,8 +72,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
     {
@@ -72,8 +88,6 @@ TEMPLATES = [
         },
     },
 ]
-
-WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Caches
 # https://docs.djangoproject.com/en/4.1/topics/cache/#redis
@@ -96,6 +110,28 @@ DATABASES = {
         'PORT': getenv('DJANGO_DATABASES_DEFAULT_PORT', '15432'),
         'PASSWORD': getenv('DJANGO_DATABASES_DEFAULT_PASSWORD'),
     }
+}
+
+# Django Rest Framework
+# https://www.django-rest-framework.org/api-guide/settings/
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissions'
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# DRF-Spectacular (OpenAPI schema)
+# https://drf-spectacular.readthedocs.io/en/latest/settings.html
+SPECTACULAR_SETTINGS = {
+    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+    'SCHEMA_PATH_PREFIX': r'/api/\w+'
 }
 
 # Password validation
@@ -122,7 +158,7 @@ USE_TZ = True
 WHITENOISE_ROOT = ng_static_dir(BASE_DIR)
 WHITENOISE_INDEX_FILE = bool(WHITENOISE_ROOT)
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = BASE_DIR / "static"
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATICFILES_DIRS = [WHITENOISE_ROOT]
 
