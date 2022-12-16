@@ -75,9 +75,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
+# Caches
+# https://docs.djangoproject.com/en/4.1/topics/cache/#redis
+redis_cache_host = getenv('DJANGO_CACHES_DEFAULT_HOST', 'localhost')
+redis_cache_port = getenv('DJANGO_CACHES_DEFAULT_PORT', '16379')
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': f'redis://{redis_cache_host}:{redis_cache_port}',
+    }
+}
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',

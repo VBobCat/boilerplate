@@ -46,6 +46,8 @@ services:
       - redis
       - frontend
     environment:
+      - DJANGO_CACHES_DEFAULT_HOST=redis
+      - DJANGO_CACHES_DEFAULT_PORT=6379
       - DJANGO_DATABASES_DEFAULT_HOST=database
       - DJANGO_DATABASES_DEFAULT_PORT=5432
     env_file:
@@ -64,6 +66,8 @@ services:
       - frontend
       - backend
     environment:
+      - DJANGO_CACHES_DEFAULT_HOST=redis
+      - DJANGO_CACHES_DEFAULT_PORT=6379
       - DJANGO_DATABASES_DEFAULT_HOST=database
       - DJANGO_DATABASES_DEFAULT_PORT=5432
     env_file:
