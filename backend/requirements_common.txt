@@ -1,4 +1,4 @@
-asgiref==3.5.2
+asgiref==3.6.0
 cryptography==38.0.4
 django-cors-headers == 3.13.0
 django-extensions == 3.2.1
@@ -6,9 +6,10 @@ django-probes==1.7.0
 Django==4.1.4
 djangorestframework==3.14.0
 drf-extensions == 0.7.1
-drf-spectacular==0.25.0
+drf-spectacular==0.25.1
 drf-spectacular-sidecar==2022.12.1
 hiredis==2.1.0
+msal==1.20.0
 python-dotenv==0.21.0
 redis==4.4.0
 regex == 2022.10.31
